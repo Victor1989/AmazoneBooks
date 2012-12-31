@@ -1,0 +1,8 @@
+<html>
+    <head>
+        <title>AmasoneBooks Application</title>
+    </head>
+    <body>
+        ${renderer.text("text", size=30)}
+    </body>
+</html>
