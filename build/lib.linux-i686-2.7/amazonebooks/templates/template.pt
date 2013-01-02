@@ -1,8 +1,16 @@
 <html>
     <head>
-        <title>AmasoneBooks Application</title>
+        <title>${title}</title>
     </head>
     <body>
-        ${renderer.text("text", size=30)}
+        <form name='Form1' method='post' align="center" action="/search">
+            ${renderer.text("text", size=30)}
+            <input type='submit' align="center" value="Search"/>
+        </form>
+        <div tal:repeat="item range(10)">
+        <p tal:condition="repeat.item.even">Even</p>
+        <p tal:condition="repeat.item.odd">Odd</p>
+        </div>
+
     </body>
 </html>

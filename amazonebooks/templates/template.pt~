@@ -1,9 +1,14 @@
 <html>
     <head>
-        <title>AmasoneBooks Application</title>
+        <title>${title}</title>
     </head>
     <body>
-        
-        ${renderer.text("text", size=30)}
+        <form name='Form1' method='post' align="center" action="/search">
+            ${renderer.text("text", size=30)}
+            <input type='submit' align="center" value="Search"/>
+        </form>
+        $ {for i in (1,2)}:
+           fgj
+        $ {endfor}
     </body>
 </html>
