@@ -33,12 +33,10 @@ def search_view(request):
         booklist = []
         if request.POST['text']:
             for page in api.item_search('Books',Keywords=request.POST['text'],limit = 10):
-                i+=1
-                print i
                 for book in page.Items.Item:
                     if hasattr(book.ItemAttributes, 'Author'):
-                        print(book.ItemAttributes.Author ,book.ItemAttributes.Title)
-                        booklist.append((book.ItemAttributes.Author ,book.ItemAttributes.Title))
+                        print book.ItemAttributes.__dict__
+                        booklist.append((book.ItemAttributes.Author ,book.ItemAttributes.Title, book.ItemAttributes.Manufacturer))
         else:
             return dict(title = 'AmazoneBooks',renderer=FormRenderer(form))
         print'4'

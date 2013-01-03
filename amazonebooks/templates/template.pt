@@ -8,7 +8,7 @@
             <input type='submit' value="Search"/>
         </form>
         <ul tal:repeat = "row booklist">
-            <li>${row[0]} ${row[1]}</li>
+            <li>${row[0]} ${row[1]} ${row[2]}</li>
         </ul>
     </body>
 </html>
