@@ -5,12 +5,10 @@
     <body>
         <form name='Form1' method='post' align="center" action="/search">
             ${renderer.text("text", size=30)}
-            <input type='submit' align="center" value="Search"/>
+            <input type='submit' value="Search"/>
         </form>
-        <div tal:repeat="item range(10)">
-        <p tal:condition="repeat.item.even">Even</p>
-        <p tal:condition="repeat.item.odd">Odd</p>
-        </div>
-
+        <ul tal:repeat = "row booklist">
+            <li>${row[0]} ${row[1]}</li>
+        </ul>
     </body>
 </html>

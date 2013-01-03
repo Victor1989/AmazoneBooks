@@ -5,10 +5,11 @@
     <body>
         <form name='Form1' method='post' align="center" action="/search">
             ${renderer.text("text", size=30)}
-            <input type='submit' align="center" value="Search"/>
+            <input type='submit' value="Search"/>
         </form>
-        $ {for i in (1,2)}:
-           fgj
-        $ {endfor}
+        <ul tal:repeat = "row booklist">
+            ${row[0]} ${row[1]}
+            <li>${booklist[0][0]} ${booklist[0][1]}</li> 
+        </ul>
     </body>
 </html>

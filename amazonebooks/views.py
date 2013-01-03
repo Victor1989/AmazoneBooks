@@ -22,7 +22,6 @@ def my_view(request):
 def search_view(request):
     if request.method == 'POST':
         form = Form(request, schema=ModelSchema)
-        print form
         AWS_KEY = 'AKIAINFQGAWKSGFXLOVA'
         SECRET_KEY = '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'
         AssTag = 'victor073-20'
@@ -31,13 +30,18 @@ def search_view(request):
         api = API(AWS_KEY,SECRET_KEY,'uk',AssTag)
         print ('2')
         print ('3')
-        for page in api.item_search('Books',Keywords=request.POST['text'],limit = 10):
-            i+=1
-            print i
-            for book in page.Items.Item:
-                if hasattr(book.ItemAttributes, 'Author'):
-                    print(book.ItemAttributes.Author ,book.ItemAttributes.Title)
+        booklist = []
+        if request.POST['text']:
+            for page in api.item_search('Books',Keywords=request.POST['text'],limit = 10):
+                i+=1
+                print i
+                for book in page.Items.Item:
+                    if hasattr(book.ItemAttributes, 'Author'):
+                        print(book.ItemAttributes.Author ,book.ItemAttributes.Title)
+                        booklist.append((book.ItemAttributes.Author ,book.ItemAttributes.Title))
+        else:
+            return dict(title = 'AmazoneBooks',renderer=FormRenderer(form))
         print'4'
-        return dict(title = request.POST['text'],renderer=FormRenderer(form))
+        return dict(title = request.POST['text'],renderer=FormRenderer(form),booklist=booklist)
     else:
         pass
