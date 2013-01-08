@@ -10,6 +10,9 @@ requires = [
     'pyramid',
     'pyramid_debugtoolbar',
     'waitress',
+    'formencode >= 1.2.2',
+    'pyramid_simpleform >=0.6',
+    'python-amazon-product-api >= 0.2.5',
     ]
 
 setup(name='AmazoneBooks',
