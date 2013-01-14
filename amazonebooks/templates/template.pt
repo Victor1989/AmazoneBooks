@@ -1,14 +1,16 @@
 <html>
     <head>
+        <link rel="stylesheet" type="text/css" href="./style.css"/>
         <title>${title}</title>
     </head>
     <body>
-        <form name='Form1' method='post' align="center" action="/search">
+        <form name='Form1' method='post' action="/search">
             ${renderer.text("text", size=30)}
             <input type='submit' value="Search"/>
         </form>
         <ul tal:repeat = "row booklist">
-            <li> ${row} </li>
+             <a href="${row[4]}"><img src="${row[3]}"/></a>${row[0]} ${row[1]} ${row[2]}
+             <a href="${row[5]}">Watch on Amazon</a>
         </ul>
     </body>
 </html>
