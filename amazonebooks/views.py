@@ -26,16 +26,17 @@ def my_view(request):
     return dict(title = 'AmazoneBooks',renderer=FormRenderer(form),booklist=[],css_url= './templates/style.css')
 
 
+AWS_KEY = 'AKIAINFQGAWKSGFXLOVA'
+SECRET_KEY = '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'
+AssTag = 'victor073-20'
+api = AmazonAPI(AWS_KEY,SECRET_KEY,AssTag,region='UK')
+
 
 @view_config(route_name = 'search',renderer='templates/template.pt')
 def search_view(request):
     #try:
         if request.method == 'POST':
             form = Form(request, schema=ModelSchema)
-            AWS_KEY = 'AKIAINFQGAWKSGFXLOVA'
-            SECRET_KEY = '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'
-            AssTag = 'victor073-20'
-            api = AmazonAPI(AWS_KEY,SECRET_KEY,AssTag,region='UK')
             booklist = []
             i = 0
             if request.POST['text']:
@@ -54,7 +55,6 @@ def search_view(request):
                         booklist[i].append("Publisher: " + removeNonAscii(book.item.ItemAttributes.Publisher.__str__()))
                     else:
                         booklist[i].append("Publisher: -")
-                    c = api.lookup(ItemId=book.asin)
                     if hasattr(book.item, 'SmallImage'):
                         booklist[i].append(removeNonAscii(book.item.SmallImage.URL.__str__()))
                     else:
@@ -67,8 +67,9 @@ def search_view(request):
                         booklist[i].append(removeNonAscii(book.item.DetailPageURL.__str__()))
                     else:
                         booklist[i].append("-")
+                    booklist[i].append(removeNonAscii(book.asin))
                     i+=1
-                    print book.item.__dict__
+                    
             else:
                 return dict(title = 'AmazoneBooks',renderer=FormRenderer(form),booklist=[])
             return dict(title = request.POST['text'],renderer=FormRenderer(form),booklist=booklist,css_url= './templates/style.css')
@@ -76,6 +77,62 @@ def search_view(request):
             pass
     #except NoExactMatchesFound:
  	return Response("ERROR. No such item")
+
+
+
+
+@view_config(route_name = 'details',renderer='templates/detail.pt')
+def details_view(request):
+    print request.matchdict['asin']
+    c = api.lookup(ItemId=request.matchdict['asin'])
+    print removeNonAscii(c.item.ItemAttributes.ListPrice.FormattedPrice.__str__())
+    iframe = c.item.CustomerReviews.IFrameURL
+    if hasattr(c.item, 'MediumImage'):
+        mediumImageUrl = c.item.MediumImage.URL
+    if hasattr(c.item,'LargeImage'):
+        largeImageUrl = c.item.LargeImage.URL
+    if hasattr(c.item.ItemAttributes,'Author'):
+        author = c.item.ItemAttributes.Author
+    else:
+        author='unknown'
+    if hasattr(c.item.ItemAttributes,'Title'):
+        title = c.item.ItemAttributes.Title
+    else:
+        title='unknown'
+    if hasattr(c.item.ItemAttributes,'NumberOfPages'):
+        numOfPages = c.item.ItemAttributes.NumberOfPages
+    else:
+        numOfPages='unknown'
+    if hasattr(c.item.ItemAttributes,'Publisher'):
+        publisher = c.item.ItemAttributes.Publisher
+    else:
+        publisher='unknown'
+    if hasattr(c.item.ItemAttributes,'Languages'):
+        if hasattr(c.item.ItemAttributes.Languages,'Language'):
+            language = c.item.ItemAttributes.Languages.Language.Name
+    if hasattr(c.item.ItemAttributes,'ISBN'):
+        isbn = c.item.ItemAttributes.ISBN
+    else:
+        isbn='unknown'
+    if hasattr(c.item.ItemAttributes,'PackageDimensions'):
+        width = c.item.ItemAttributes.PackageDimensions.Width
+        length = c.item.ItemAttributes.PackageDimensions.Length
+        height = c.item.ItemAttributes.PackageDimensions.Height
+        dim=[width,length,height]
+    else:
+        dim=['unknown','unknown','unknown']
+    if hasattr(c.item,'SalesRank'):
+        salesRank = c.item.SalesRank
+    else:
+        salesRank='unknown'
+    if hasattr(c.item.ItemAttributes,'ListPrice'):
+        listPrice =  removeNonAscii(c.item.ItemAttributes.ListPrice.FormattedPrice.__str__())
+        currency = removeNonAscii(c.item.ItemAttributes.ListPrice.CurrencyCode.__str__())
+        price = [listPrice,currency]
+    else:
+        price = ['unknown','unknown']
+    return dict(mediumImageUrl=mediumImageUrl,largeImageUrl=largeImageUrl,title=title,author=author,iframe=iframe,numOfPages=numOfPages, \
+    publisher=publisher,language=language,isbn=isbn,dim=dim,salesRank=salesRank,price=price)
 
 
 
