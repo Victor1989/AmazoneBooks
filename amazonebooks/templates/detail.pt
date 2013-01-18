@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title>${title}</title>
+        <style>
+            <!-- div.content{margin:0 0%;position:relative;} div.ban{position:relative;height:155px} img{float:left}-->
+        </style>
+    </head>
+    <body>
+        <a href="${largeImageUrl}"><img src="${mediumImageUrl}"/></a>
+        <div class="ban">
+        <p>Author: ${author}</p>
+        Title: ${title}
+        <p>List price: ${price[0]} ${price[1]}</p>
+        <hr/>
+        </div>
+        <div  class="content">
+        <hr/>
+         <ul>
+             <p><h2>Product details:</h2></p>
+             <li>Paperback: ${numOfPages}
+             <li>Publisher: ${publisher}
+             <li>Language: ${language}
+             <li>ISBN: ${isbn}
+             <li>Product dimensions: ${dim[0]} X ${dim[1]} X ${dim[2]}
+             <li>Sales rank: ${salesRank}
+         </ul>
+        <hr/>
+        </div>
+        <div  style="border:3px">
+        <iframe src="${iframe}" width="100%" height="600" frameborder="1"></iframe>
+        </div>
+    </body>
+</html>
