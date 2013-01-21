@@ -5,6 +5,7 @@ from pyramid.response import Response
 from pyramid_simpleform.renderers import FormRenderer
 from lxml import etree
 from amazon.api import AmazonAPI
+import sqlite3 as lite
 
 
 
@@ -17,6 +18,22 @@ class ModelSchema(Schema):
 
 def removeNonAscii(s): 
     return "".join(filter(lambda x: ord(x)<128, s))
+
+
+def database():
+    con = None
+    try:
+        con = lite.connect('Likes.db')
+        cur = con.cursor()
+        cur.execute('SELECT SQLITE_VERSION()')
+        data = cur.fetchone()
+        print ('SQLite version %s: ' %data)
+    except lite.Error,e:
+        print ('Error %s: ' %e.args[0])
+        sys.exit(1)
+    finally:
+        if con:
+            con.close()
 
 
 
@@ -83,9 +100,9 @@ def search_view(request):
 
 @view_config(route_name = 'details',renderer='templates/detail.pt')
 def details_view(request):
-    print request.matchdict['asin']
+    print request.POST.__str__()
     c = api.lookup(ItemId=request.matchdict['asin'])
-    print removeNonAscii(c.item.ItemAttributes.ListPrice.FormattedPrice.__str__())
+    #print removeNonAscii(c.item.ItemAttributes.ListPrice.FormattedPrice.__str__())
     iframe = c.item.CustomerReviews.IFrameURL
     if hasattr(c.item, 'MediumImage'):
         mediumImageUrl = c.item.MediumImage.URL
@@ -131,6 +148,7 @@ def details_view(request):
         price = [listPrice,currency]
     else:
         price = ['unknown','unknown']
+    database()
     return dict(mediumImageUrl=mediumImageUrl,largeImageUrl=largeImageUrl,title=title,author=author,iframe=iframe,numOfPages=numOfPages, \
     publisher=publisher,language=language,isbn=isbn,dim=dim,salesRank=salesRank,price=price)
 

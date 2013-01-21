@@ -1,8 +1,28 @@
 <html>
+    <script>
+    function SendLike()
+    {
+        var xmlhttp;
+        var data = "Hello";
+        if (window.XMLHttpRequest)
+        {
+        xmlhttp = new XMLHttpRequest();
+        }
+        else
+        {
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.open("POST",'/details',true);
+        alert("Hello World5");
+        alert("Hello World6");
+        alert("3");
+        xml.http.send(data);
+    }
+    </script>
     <head>
         <title>${title}</title>
         <style>
-            <!-- div.content{margin:0 0%;position:relative;} div.ban{position:relative;height:155px} img{float:left}-->
+            <!-- div.content{margin:0 0%;position:relative;} div.ban{position:relative;height:155px;margin-left:10%} img{float:left}-->
         </style>
     </head>
     <body>
@@ -12,6 +32,9 @@
         Title: ${title}
         <p>List price: ${price[0]} ${price[1]}</p>
         <hr/>
+        </div>
+        <div id="button_div">
+            <button type="button" onclick="SendLike()">Like</button>
         </div>
         <div  class="content">
         <hr/>
