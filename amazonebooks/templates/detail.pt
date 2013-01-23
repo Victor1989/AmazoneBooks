@@ -1,8 +1,7 @@
 <html>
     <script>
-    function SendLike()
+     function SendLike(bookasin)
     {
-        var xmlhttp;
         var data = "Hello";
         if (window.XMLHttpRequest)
         {
@@ -12,29 +11,37 @@
         {
         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
         }
-        xmlhttp.open("POST",'/details',true);
-        alert("Hello World5");
-        alert("Hello World6");
-        alert("3");
-        xml.http.send(data);
+        xmlhttp.onreadystatechange = function()
+        {
+            if (this.readyState !==4)
+            {
+                return 0;   
+            }
+            if (this.status === 200)
+            {
+                document.getElementById("myVar").value = this.responseText;
+            }
+        }
+        xmlhttp.open("POST",'/details/'+bookasin,true);
+        xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xmlhttp.send(data);
     }
     </script>
     <head>
+        <link rel="stylesheet" type="text/css" href="/static/style.css" media="all"/>
         <title>${title}</title>
-        <style>
-            <!-- div.content{margin:0 0%;position:relative;} div.ban{position:relative;height:155px;margin-left:10%} img{float:left}-->
-        </style>
     </head>
     <body>
         <a href="${largeImageUrl}"><img src="${mediumImageUrl}"/></a>
         <div class="ban">
         <p>Author: ${author}</p>
-        Title: ${title}
+        Title: <div class="title">${title}</div>
         <p>List price: ${price[0]} ${price[1]}</p>
         <hr/>
         </div>
         <div id="button_div">
-            <button type="button" onclick="SendLike()">Like</button>
+            <button type="button" onclick="SendLike('${bookasin}')">Like</button>
+             <input type="text" id="myVar" name="variable" value="${likes}" readonly="readonly" width="20">  
         </div>
         <div  class="content">
         <hr/>
