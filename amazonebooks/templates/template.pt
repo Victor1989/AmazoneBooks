@@ -1,6 +1,6 @@
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="style.css" media="all"/>
+        <link rel="stylesheet" type="text/css" href="/static/style.css" media="all"/>
         <title>${title}</title>
     </head>
     <body>
@@ -10,7 +10,7 @@
         </form>
         <ul tal:repeat = "row booklist">
              <div style="border:3px">
-             <a href="${row[4]}"><img src="${row[3]}" align="left"/></a>${row[0]} <p>${row[1]}</p> ${row[2]}
+             <a href="${row[4]}"><img src="${row[3]}"/></a>${row[0]} <p>${row[1]}</p> ${row[2]}
              <a href="/details/${row[6]}"><p>Details</p></a>
              <a href="${row[5]}">Watch on Amazon</a>
              </div>
