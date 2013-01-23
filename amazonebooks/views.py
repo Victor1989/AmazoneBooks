@@ -6,6 +6,7 @@ from pyramid_simpleform.renderers import FormRenderer
 from lxml import etree
 from amazon.api import AmazonAPI
 import sqlite3 as lite
+import sys
 
 
 
@@ -20,14 +21,14 @@ def removeNonAscii(s):
     return "".join(filter(lambda x: ord(x)<128, s))
 
 
-def database():
+def read_database(asin):
     con = None
     try:
-        con = lite.connect('Likes.db')
+        con = lite.connect('./amazonebooks/Likes.db')
         cur = con.cursor()
-        cur.execute('SELECT SQLITE_VERSION()')
+        cur.execute("SELECT likes FROM BookLikes WHERE bookasin='%s'" %asin)
         data = cur.fetchone()
-        print ('SQLite version %s: ' %data)
+        return data
     except lite.Error,e:
         print ('Error %s: ' %e.args[0])
         sys.exit(1)
@@ -35,6 +36,19 @@ def database():
         if con:
             con.close()
 
+def write_database(asin,nlikes):
+    con = None
+    try: 
+        con = lite.connect('./amazonebooks/Likes.db')
+        cur = con.cursor()
+        con.execute("INSERT OR REPLACE INTO BookLikes (bookasin,likes) VALUES ('%s','%d')" %(asin, nlikes))
+        con.commit()
+    except lite.Error,e:
+        print ('Error %s: ' %e.args[0])
+        sys.exit(1)
+    finally:
+        if con:
+            con.close()
 
 
 @view_config(route_name='home', renderer='templates/template.pt')
@@ -100,57 +114,73 @@ def search_view(request):
 
 @view_config(route_name = 'details',renderer='templates/detail.pt')
 def details_view(request):
-    print request.POST.__str__()
+    numOfLikes = None
     c = api.lookup(ItemId=request.matchdict['asin'])
-    #print removeNonAscii(c.item.ItemAttributes.ListPrice.FormattedPrice.__str__())
-    iframe = c.item.CustomerReviews.IFrameURL
-    if hasattr(c.item, 'MediumImage'):
-        mediumImageUrl = c.item.MediumImage.URL
-    if hasattr(c.item,'LargeImage'):
-        largeImageUrl = c.item.LargeImage.URL
-    if hasattr(c.item.ItemAttributes,'Author'):
-        author = c.item.ItemAttributes.Author
+    asin = request.matchdict['asin']
+    if 'Hello' in request.POST:
+        numOfLikes = read_database(asin)
+        if numOfLikes == None:
+            numOfLikes=(1,)
+            write_database(asin,numOfLikes[0])
+        else:
+            n = numOfLikes[0]
+            n+=1
+            numOfLikes=(n,)
+            write_database(asin,numOfLikes[0])
+        resp = Response(body=numOfLikes[0].__str__())
+        return resp
     else:
-        author='unknown'
-    if hasattr(c.item.ItemAttributes,'Title'):
-        title = c.item.ItemAttributes.Title
-    else:
-        title='unknown'
-    if hasattr(c.item.ItemAttributes,'NumberOfPages'):
-        numOfPages = c.item.ItemAttributes.NumberOfPages
-    else:
-        numOfPages='unknown'
-    if hasattr(c.item.ItemAttributes,'Publisher'):
-        publisher = c.item.ItemAttributes.Publisher
-    else:
-        publisher='unknown'
-    if hasattr(c.item.ItemAttributes,'Languages'):
-        if hasattr(c.item.ItemAttributes.Languages,'Language'):
-            language = c.item.ItemAttributes.Languages.Language.Name
-    if hasattr(c.item.ItemAttributes,'ISBN'):
-        isbn = c.item.ItemAttributes.ISBN
-    else:
-        isbn='unknown'
-    if hasattr(c.item.ItemAttributes,'PackageDimensions'):
-        width = c.item.ItemAttributes.PackageDimensions.Width
-        length = c.item.ItemAttributes.PackageDimensions.Length
-        height = c.item.ItemAttributes.PackageDimensions.Height
-        dim=[width,length,height]
-    else:
-        dim=['unknown','unknown','unknown']
-    if hasattr(c.item,'SalesRank'):
-        salesRank = c.item.SalesRank
-    else:
-        salesRank='unknown'
-    if hasattr(c.item.ItemAttributes,'ListPrice'):
-        listPrice =  removeNonAscii(c.item.ItemAttributes.ListPrice.FormattedPrice.__str__())
-        currency = removeNonAscii(c.item.ItemAttributes.ListPrice.CurrencyCode.__str__())
-        price = [listPrice,currency]
-    else:
-        price = ['unknown','unknown']
-    database()
-    return dict(mediumImageUrl=mediumImageUrl,largeImageUrl=largeImageUrl,title=title,author=author,iframe=iframe,numOfPages=numOfPages, \
-    publisher=publisher,language=language,isbn=isbn,dim=dim,salesRank=salesRank,price=price)
+        numOfLikes = read_database(asin)
+        if numOfLikes == None:
+            write_database(asin,0)
+        numOfLikes = read_database(asin)
+        iframe = c.item.CustomerReviews.IFrameURL
+        if hasattr(c.item, 'MediumImage'):
+            mediumImageUrl = c.item.MediumImage.URL
+        if hasattr(c.item,'LargeImage'):
+            largeImageUrl = c.item.LargeImage.URL
+        if hasattr(c.item.ItemAttributes,'Author'):
+            author = c.item.ItemAttributes.Author
+        else:
+            author='unknown'
+        if hasattr(c.item.ItemAttributes,'Title'):
+            title = c.item.ItemAttributes.Title
+        else:
+            title='unknown'
+        if hasattr(c.item.ItemAttributes,'NumberOfPages'):
+            numOfPages = c.item.ItemAttributes.NumberOfPages
+        else:
+            numOfPages='unknown'
+        if hasattr(c.item.ItemAttributes,'Publisher'):
+            publisher = c.item.ItemAttributes.Publisher
+        else:
+            publisher='unknown'
+        if hasattr(c.item.ItemAttributes,'Languages'):
+            if hasattr(c.item.ItemAttributes.Languages,'Language'):
+                language = c.item.ItemAttributes.Languages.Language.Name
+        if hasattr(c.item.ItemAttributes,'ISBN'):
+            isbn = c.item.ItemAttributes.ISBN
+        else:
+            isbn='unknown'
+        if hasattr(c.item.ItemAttributes,'PackageDimensions'):
+            width = c.item.ItemAttributes.PackageDimensions.Width
+            length = c.item.ItemAttributes.PackageDimensions.Length
+            height = c.item.ItemAttributes.PackageDimensions.Height
+            dim=[width,length,height]
+        else:
+            dim=['unknown','unknown','unknown']
+        if hasattr(c.item,'SalesRank'):
+            salesRank = c.item.SalesRank
+        else:
+            salesRank='unknown'
+        if hasattr(c.item.ItemAttributes,'ListPrice'):
+            listPrice =  removeNonAscii(c.item.ItemAttributes.ListPrice.FormattedPrice.__str__())
+            currency = removeNonAscii(c.item.ItemAttributes.ListPrice.CurrencyCode.__str__())
+            price = [listPrice,currency]
+        else:
+            price = ['unknown','unknown']
+        return dict(mediumImageUrl=mediumImageUrl,largeImageUrl=largeImageUrl,title=title,author=author,iframe=iframe,numOfPages=numOfPages, \
+        publisher=publisher,language=language,isbn=isbn,dim=dim,salesRank=salesRank,price=price,bookasin=asin,likes=numOfLikes[0])
 
 
 
