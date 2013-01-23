@@ -1,5 +1,5 @@
 create table if not exists BookLikes(
-    id integer primary key autoincrement,
-    asin char (100) not null,
+    bookasin char (100) primary key not null,
     likes integer not null
+
 );
