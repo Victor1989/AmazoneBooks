@@ -1,5 +1,9 @@
-form {
+input {
     position: relative;
-    left: 45%;
-    width: 200px
+    left: 35%;
+}
+
+img{
+    margin-left: 0px;
+    float: left;
 }
