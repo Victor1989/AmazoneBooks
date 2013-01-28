@@ -1,9 +1,7 @@
 import sys
 
 import sqlite3 as lite
-
 from lxml import etree
-
 from pyramid.view import view_config
 from formencode import Schema, validators
 from pyramid_simpleform import Form
@@ -17,9 +15,8 @@ from amazon.api import AmazonAPI
 
 AWS_KEY = 'AKIAINFQGAWKSGFXLOVA'
 SECRET_KEY = '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'
-AssTag = 'victor073-20'
-api = AmazonAPI(AWS_KEY, SECRET_KEY, AssTag, region='UK')
-
+ASS_TAG = 'victor073-20'
+api = AmazonAPI(AWS_KEY, SECRET_KEY, ASS_TAG, region='UK')
 
 
 class ModelSchema(Schema):
@@ -31,7 +28,7 @@ class ModelSchema(Schema):
     text = validators.MinLength(5, not_empty=True)
 
 
-def removeNonAscii(s): 
+def remove_non_ascii(s): 
     return "".join(filter(lambda x: ord(x) < 128, s))
 
 
@@ -73,100 +70,98 @@ def write_database(asin, nlikes):
             con.close()
 
 
-@view_config(route_name = 'home', renderer = 'templates/template.pt')
+@view_config(route_name='home', renderer='templates/template.pt')
 def my_view(request):
 
-# start page view
+    # start page view
 
     form = Form(request, schema=ModelSchema)
     return dict(title='AmazoneBooks',renderer=FormRenderer(form),\
                 booklist = [])
 
 
-@view_config(route_name = 'search',renderer = 'templates/template.pt')
+@view_config(route_name='search',renderer='templates/template.pt')
 def search_view(request):
 
-# view for search results
+    # view for search results
 
     try:
 
         if request.method == 'POST':
             form = Form(request, schema=ModelSchema)
-            booklist = []   # create a book list
+            bookList = []   # create a book list
             i = 0
 
             if request.POST['text']:
                 books = api.search(Keywords=request.POST['text'],\
                                    SearchIndex='Books')
                 for n,book in enumerate(books):
-                    booklist.append([])  # adding a list of book properties
+                    bookList.append([])  # adding a list of book properties
 
                     if hasattr(book.item.ItemAttributes, 'Author'):
-                        booklist[i].append(
+                        bookList[i].append(
                             'Author: ' + \
-                            removeNonAscii(
+                            remove_non_ascii(
                                 book.item.ItemAttributes.Author.__str__()))
                     else:
-                        booklist[i].append('Author: -')
+                        bookList[i].append('Author: -')
 
                     if hasattr(book.item.ItemAttributes, 'Title'):
-                        booklist[i].append(
+                        bookList[i].append(
                             'Title: ' + \
-                            removeNonAscii(
+                            remove_non_ascii(
                                 book.item.ItemAttributes.Title.__str__()))
                     else:
-                        booklist[i].append('Title: -')
+                        bookList[i].append('Title: -')
 
                     if hasattr(book.item.ItemAttributes, 'Publisher'):
-                        booklist[i].append(
+                        bookList[i].append(
                             "Publisher: " + \
-                            removeNonAscii(
+                            remove_non_ascii(
                                 book.item.ItemAttributes.Publisher.__str__()))
                     else:
-                        booklist[i].append("Publisher: -")
+                        bookList[i].append("Publisher: -")
 
                     if hasattr(book.item, 'SmallImage'):
-                        booklist[i].append(
-                            removeNonAscii(
+                        bookList[i].append(
+                            remove_non_ascii(
                                 book.item.SmallImage.URL.__str__()))
                     else:
-                        booklist[i].append("-")
+                        bookList[i].append("-")
 
                     if hasattr(book.item, 'LargeImage'):
-                        booklist[i].append(
-                            removeNonAscii(
+                        bookList[i].append(
+                            remove_non_ascii(
                                 book.item.LargeImage.URL.__str__()))
                     else:
-                        booklist[i].append("-")
+                        bookList[i].append("-")
 
                     if hasattr(book.item, 'DetailPageURL'):
-                        booklist[i].append(
-                            removeNonAscii(
+                        bookList[i].append(
+                            remove_non_ascii(
                                 book.item.DetailPageURL.__str__()))
                     else:
-                        booklist[i].append("-")
+                        bookList[i].append("-")
 
-                    booklist[i].append(removeNonAscii(book.asin))
+                    bookList[i].append(remove_non_ascii(book.asin))
                     i += 1
                     
             else:
-                return dict(title = 'AmazoneBooks',\
-                            renderer = FormRenderer(form),booklist = [])
-            return dict(title = request.POST['text'],\
-                        renderer = FormRenderer(form),booklist = booklist,\
-                        css_url = './templates/style.css')
+                return dict(title='AmazoneBooks',\
+                            renderer=FormRenderer(form),booklist = [])
+            return dict(title=request.POST['text'],\
+                        renderer=FormRenderer(form),booklist = bookList,\
+                        css_url='./templates/style.css')
         else:
             pass
     except NoExactMatchesFound:
  	return Response("ERROR. No such item")
 
 
-
-
-@view_config(route_name = 'details',renderer = 'templates/detail.pt')
+@view_config(route_name='details',renderer='templates/detail.pt')
 def details_view(request):
 
-# view for product details
+    # view for product details
 
     c = api.lookup(ItemId = request.matchdict['asin'])
     asin = request.matchdict['asin']
@@ -229,9 +224,23 @@ def details_view(request):
             isbn = 'unknown'
 
         if hasattr(c.item.ItemAttributes,'PackageDimensions'):
-            width = c.item.ItemAttributes.PackageDimensions.Width
-            length = c.item.ItemAttributes.PackageDimensions.Length
-            height = c.item.ItemAttributes.PackageDimensions.Height
+            dim = []
+
+            if hasattr(c.item.ItemAttributes.PackageDimensions,'Width'):
+                width = c.item.ItemAttributes.PackageDimensions.Width
+            else:
+                width = 'unknown'
+
+            if hasattr(c.item.ItemAttributes.PackageDimensions,'Length'):
+                length = c.item.ItemAttributes.PackageDimensions.Length
+            else:
+                length = 'unknown'
+
+            if hasattr(c.item.ItemAttributes.PackageDimensions,'Height'):
+                height = c.item.ItemAttributes.PackageDimensions.Height
+            else:
+                height = 'unknown'
+
             dim=[width,length,height]
         else:
             dim = ['unknown','unknown','unknown']
@@ -242,21 +251,21 @@ def details_view(request):
             salesRank = 'unknown'
 
         if hasattr(c.item.ItemAttributes,'ListPrice'):
-            listPrice =  removeNonAscii(
+            listPrice =  remove_non_ascii(
                 c.item.ItemAttributes.ListPrice.FormattedPrice.__str__())
-            currency = removeNonAscii(
+            currency = remove_non_ascii(
                 c.item.ItemAttributes.ListPrice.CurrencyCode.__str__())
             price = [listPrice,currency]
         else:
             price = ['unknown','unknown']
 
-        return dict(mediumImageUrl = mediumImageUrl, \
-                    largeImageUrl = largeImageUrl,\
-                    title = title, author = author, iframe = iframe, \
-                    numOfPages = numOfPages, publisher = publisher,\
-                    language = language, isbn = isbn, dim = dim,\
-                    salesRank = salesRank, price = price, bookasin = asin, \
-                    likes = numOfLikes[0])
+        return dict(mediumImageUrl=mediumImageUrl, \
+                    largeImageUrl=largeImageUrl,\
+                    title=title, author=author, iframe=iframe, \
+                    numOfPages=numOfPages, publisher=publisher,\
+                    language=language, isbn=isbn, dim=dim,\
+                    salesRank=salesRank, price=price, bookasin=asin, \
+                    likes=numOfLikes[0])
 
 
 
